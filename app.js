@@ -474,16 +474,22 @@ document.getElementById('back-btn').addEventListener('click', () => {
 });
 
 // ==========================================
-// 10. 調査完了処理
+// 10. 調査完了処理 ＆ データ送信
 // ==========================================
 function finishSurvey() {
     stopAllAudio();
     
     document.getElementById('dashboard-card').classList.add('d-none');
     
-    // 🌟 調査完了画面では「戻る」ボタンを非表示にする
-    const backBtn = document.getElementById('back-btn');
-    if (backBtn) backBtn.classList.add('d-none');
+    // UIを「送信中」の表示に切り替える
+    const formArea = document.getElementById('survey-form-area');
+    formArea.innerHTML = `
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <h4 class="text-secondary fw-bold">データを送信しています...</h4>
+            <p class="text-muted small mt-2">画面を閉じずにお待ちください</p>
+        </div>
+    `;
     
     let completedSurveys = JSON.parse(localStorage.getItem('completedSurveys')) || [];
     if (!completedSurveys.includes(currentSurveyData.id)) {
@@ -493,15 +499,45 @@ function finishSurvey() {
 
     const themeColor = currentSurveyData.themeColor || '#0d6efd';
 
-    document.getElementById('survey-form-area').innerHTML = `
-        <div class="text-center p-5">
-            <h3 class="mb-4 fw-bold" style="color: ${themeColor}">ご協力ありがとうございました！</h3>
-            <p>全ての楽曲の評価が完了しました。</p>
-            <button class="btn mt-4 btn-lg py-3 px-5 fw-bold shadow-sm text-white" style="background-color: ${themeColor}; border-color: ${themeColor};" onclick="location.reload()">トップ画面へ戻る</button>
-        </div>
-    `;
-    
-    console.log("◆ アンケート結果 ◆", JSON.stringify(surveyResults, null, 2));
+    // 🌟 送信するデータのパッケージを作成
+    const payload = {
+        surveyId: currentSurveyData.id,
+        timestamp: new Date().toLocaleString("ja-JP"),
+        results: surveyResults
+    };
+
+    // 🌟 GASのウェブアプリURL（↓ここを書き換えてください！）
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbw3eB7oLyLiw2VBwQO9BpH01OACKsxDHOJ_4GJkZSj5sCJs4QJSxyyQ2mn9CVRXhr_j/exec";
+
+    // fetchを使ってバックエンド(GAS)へPOST送信
+    fetch(GAS_URL, {
+        method: "POST",
+        // CORS(通信ブロック)を回避するため、あえて text/plain を指定します
+        headers: { "Content-Type": "text/plain" }, 
+        body: JSON.stringify(payload)
+    })
+    .then(response => {
+        // 送信成功時の表示
+        formArea.innerHTML = `
+            <div class="text-center p-5">
+                <h3 class="mb-4 fw-bold" style="color: ${themeColor}">ご協力ありがとうございました！</h3>
+                <p>回答データの送信が完了しました。</p>
+                <button class="btn mt-4 btn-lg py-3 px-5 fw-bold shadow-sm text-white" style="background-color: ${themeColor}; border-color: ${themeColor};" onclick="location.reload()">トップ画面へ戻る</button>
+            </div>
+        `;
+        console.log("◆ データ送信成功 ◆");
+    })
+    .catch(error => {
+        // 送信失敗時（オフラインなど）の表示
+        console.error("送信エラー:", error);
+        formArea.innerHTML = `
+            <div class="text-center p-5">
+                <h3 class="mb-4 fw-bold text-danger">エラーが発生しました</h3>
+                <p>データの送信に失敗しました。ネットワーク環境をご確認ください。</p>
+                <button class="btn btn-secondary mt-4 py-2 px-4" onclick="location.reload()">トップへ戻る</button>
+            </div>
+        `;
+    });
 }
 
 window.onload = () => {
