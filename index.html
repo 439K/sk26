@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ゲーム音響 心理評価アンケート</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #f8f9fa; transition: background-color 0.6s ease;">
+
+<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+    <div class="container max-w-custom">
+        <span class="navbar-brand fw-bold">音響評価システム</span>
+    </div>
+</nav>
+
+<div class="container max-w-custom">
+    
+    <!-- 1. トップ画面（調査選択） -->
+    <section id="home-section">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">ご協力のお願い</h2>
+            <p class="text-muted">実施する調査を選択してください。</p>
+        </div>
+        <div class="row" id="survey-list-container">
+            <!-- JSで動的に生成 -->
+        </div>
+    </section>
+
+    <!-- 2. 調査画面 -->
+    <section id="survey-section" class="d-none">
+        <!-- 🌟 戻るボタンを復元しました -->
+        <button id="back-btn" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> 戻る</button>
+        <h3 id="current-survey-title" class="mb-3 text-center fw-bold"></h3>
+        
+        <div id="dashboard-card" class="card shadow-sm mb-4 border-0">
+            <div class="card-body text-center">
+                
+                <div id="survey-info-before-start" class="mb-4 mt-3">
+                    <h5 class="text-secondary mb-4 fw-bold">調査内容</h5>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <div class="p-3 border rounded bg-white shadow-sm flex-fill" style="max-width: 160px;">
+                            <div class="text-muted small">全曲数</div>
+                            <div class="fs-3 fw-bold text-dark"><span id="info-total-tracks">0</span> 曲</div>
+                        </div>
+                        <div class="p-3 border rounded bg-white shadow-sm flex-fill" style="max-width: 160px;">
+                            <div class="text-muted small">評価項目</div>
+                            <div class="fs-3 fw-bold text-dark"><span id="info-total-questions">0</span> 項目</div>
+                        </div>
+                        <div class="p-3 border rounded bg-white shadow-sm flex-fill" style="max-width: 160px;">
+                            <div class="text-muted small">所要時間</div>
+                            <div class="fs-3 fw-bold text-dark" id="info-estimated-time">約 0分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="progress-container" class="d-none my-3 px-3">
+                    <div class="progress mb-2" style="height: 12px;">
+                        <div id="progress-bar" class="progress-bar" style="width: 11%; transition: width 0.3s, background-color 0.3s;"></div>
+                    </div>
+                    <h5 class="text-secondary fw-bold mt-2">進行状況: <span id="progress-text" class="text-dark fs-3 fw-bolder">1 / 9</span></h5>
+                </div>
+                
+                <div id="beat-tracker" class="my-4 d-none">
+                    <div id="current-beat-text" class="display-1 fw-bold mb-3" style="color: var(--theme-color);">1</div>
+                    <div id="beat-circles" class="beat-grid"></div>
+
+                    <button id="play-pause-btn" class="btn btn-outline-secondary btn-lg px-5 py-3 fs-3 mt-4 rounded-pill shadow-sm">
+                        <i class="bi bi-pause-fill"></i> 一時停止
+                    </button>
+                </div>
+
+                <button id="start-btn" class="btn btn-success btn-lg mt-4 py-3 w-100 fw-bold shadow-sm">音声データを読み込み＆開始 (音が出ます)</button>
+            </div>
+        </div>
+
+        <div id="survey-form-area" class="card shadow-sm d-none border-0">
+            <div class="card-body p-sm-5">
+                <form id="evaluation-form">
+                    <div id="questions-container"></div>
+                    <button type="button" id="next-btn" class="btn btn-primary w-100 btn-lg py-3 mt-4 fw-bold shadow-sm" disabled>次の楽曲へ</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

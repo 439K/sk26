@@ -1,0 +1,96 @@
+body {
+    background-color: #f8f9fa;
+    transition: background-color 0.5s ease; /* 🌟 背景色がふわっと変わるアニメーション */
+}
+
+.max-w-custom {
+    max-width: 800px;
+}
+
+input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.beat-circle {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    border: 2px solid #ced4da;
+    transition: background-color 0.05s, transform 0.05s;
+}
+
+/* 🌟 点灯時の色をテーマカラー（CSS変数）に変更 */
+.beat-circle.active {
+    background-color: var(--theme-color, #0d6efd); 
+    border-color: var(--theme-color, #0d6efd);
+    transform: scale(1.3);
+    box-shadow: 0 0 10px var(--theme-color-transparent, rgba(13, 110, 253, 0.6));
+}
+
+.beat-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 16px);
+    gap: 15px;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.radio-scale-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.radio-circle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 🌟 ラジオボタンの枠線をテーマカラーに変更 */
+.radio-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--theme-color, #0d6efd);
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 🌟 選択時のラジオボタンの色をテーマカラーに変更 */
+.btn-check:checked + .radio-circle {
+    background-color: var(--theme-color, #0d6efd);
+    box-shadow: 0 0 10px var(--theme-color-transparent, rgba(13, 110, 253, 0.5));
+    border: 4px solid #fff;
+    outline: 2px solid var(--theme-color, #0d6efd);
+}
+
+.radio-label-text {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #6c757d;
+}
+
+@media (max-width: 576px) {
+    .radio-circle {
+        width: 24px;
+        height: 24px;
+    }
+    .radio-label-text {
+        font-size: 0.75rem;
+    }
+}
