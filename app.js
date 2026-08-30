@@ -130,7 +130,6 @@ function initSurvey(surveyId) {
     audioBuffers = [];
     isAllAnswered = false;
     
-    // UI側の音量バーと内部音量を同期、テキストの%表示と色も初期化
     const volSlider = document.getElementById('volume-slider');
     const volLabel = document.getElementById('volume-label');
     const warningText = document.getElementById('volume-warning-text');
@@ -139,7 +138,6 @@ function initSurvey(surveyId) {
         globalVolume = parseFloat(volSlider.value);
         volLabel.innerHTML = `<i class="bi bi-volume-up-fill"></i> 音量調整（${Math.round(globalVolume * 100)}%）`;
 
-        // 🌟 変更: 初期状態で0%になっていた場合の文字色切り替え
         if (globalVolume === 0) {
             volLabel.classList.remove('text-dark');
             volLabel.classList.add('text-danger');
@@ -187,8 +185,6 @@ function initSurvey(surveyId) {
     });
     
     const qCount = currentSurveyData.questions.length;
-    
-    // 🌟 変更: 計算意図を明確にするため (qCount / 10) に変更（数学的な結果は以前と同じです）
     const multiplier = 1 + (qCount / 10);
     const estimatedTotalSeconds = totalLockSeconds * multiplier;
     
@@ -350,7 +346,41 @@ function playTrack(index, scheduledTime = 0, offset = 0, fadeDuration = 0) {
 }
 
 // ==========================================
-// 8. アンケートUIの動的生成
+// 8. 質問ごとのボタンの進捗デザイン更新 (🌟変更点)
+// ==========================================
+function updateNextButtonProgress(answeredCount) {
+    const nextBtn = document.getElementById('next-btn');
+    if (!nextBtn || !currentSurveyData) return;
+    
+    const totalQ = currentSurveyData.questions.length;
+    const progressPercent = (answeredCount / totalQ) * 100;
+    const themeColor = currentSurveyData.themeColor || '#0d6efd';
+    
+    // ボタンの枠線は常にテーマカラー
+    nextBtn.style.border = `2px solid ${themeColor}`;
+    
+    // 🌟 気持ち悪かったアウトライン（縁取り）と影を削除
+    nextBtn.style.webkitTextStroke = '0';
+    nextBtn.style.textShadow = 'none';
+
+    if (progressPercent === 100) {
+        // 🌟 【100%のとき】
+        // 背景を濃いテーマカラーで塗りつぶし、文字を白にして完了を強調！
+        nextBtn.style.setProperty('--btn-progress', '100%');
+        nextBtn.style.setProperty('--btn-theme-color', themeColor);
+        nextBtn.style.color = '#ffffff';
+    } else {
+        // 🌟 【途中のとき】
+        // 背景の塗りを半透明（20%）にし、文字をテーマカラーにする（綺麗に読めます）
+        const translucentFill = hexToRgba(themeColor, 0.2);
+        nextBtn.style.setProperty('--btn-progress', `${progressPercent}%`);
+        nextBtn.style.setProperty('--btn-theme-color', translucentFill);
+        nextBtn.style.color = themeColor;
+    }
+}
+
+// ==========================================
+// 9. アンケートUIの動的生成
 // ==========================================
 function renderQuestions() {
     const container = document.getElementById('questions-container');
@@ -385,11 +415,8 @@ function renderQuestions() {
 
     const radios = document.querySelectorAll('.question-radio');
     let answeredQuestions = new Set();
-    const nextBtn = document.getElementById('next-btn');
-
-    const themeColor = currentSurveyData.themeColor || '#0d6efd';
-    nextBtn.style.backgroundColor = themeColor;
-    nextBtn.style.borderColor = themeColor;
+    
+    updateNextButtonProgress(0);
 
     radios.forEach((radio) => {
         radio.addEventListener('change', (e) => {
@@ -411,6 +438,8 @@ function renderQuestions() {
             if (answeredQuestions.size === currentSurveyData.questions.length) {
                 isAllAnswered = true; 
             }
+            
+            updateNextButtonProgress(answeredQuestions.size);
         });
     });
 }
@@ -427,7 +456,7 @@ function resetForm() {
 }
 
 // ==========================================
-// 9. ボタンなどのイベントリスナー
+// 10. ボタンなどのイベントリスナー
 // ==========================================
 document.getElementById('start-btn').addEventListener('click', async (e) => {
     const btn = e.target;
@@ -468,7 +497,6 @@ document.getElementById('play-pause-btn').addEventListener('click', () => {
     }
 });
 
-// 🌟 音量スライダーのイベント（%表示と注意書きのテキスト・文字色をリアルタイム更新）
 document.getElementById('volume-slider').addEventListener('input', (e) => {
     globalVolume = parseFloat(e.target.value);
     
@@ -476,7 +504,6 @@ document.getElementById('volume-slider').addEventListener('input', (e) => {
     if (volLabel) {
         volLabel.innerHTML = `<i class="bi bi-volume-up-fill"></i> 音量調整（${Math.round(globalVolume * 100)}%）`;
 
-        // 🌟 変更: 0%のときに赤文字（text-danger）にする
         if (globalVolume === 0) {
             volLabel.classList.remove('text-dark');
             volLabel.classList.add('text-danger');
@@ -555,7 +582,7 @@ document.getElementById('back-btn').addEventListener('click', () => {
 });
 
 // ==========================================
-// 10. 調査完了処理 ＆ データ送信
+// 11. 調査完了処理 ＆ データ送信
 // ==========================================
 function finishSurvey() {
     stopAllAudio();
