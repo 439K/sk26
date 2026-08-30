@@ -12,9 +12,9 @@
 </head>
 <body style="background-color: #f8f9fa; transition: background-color 0.6s ease;">
 
-<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+<nav id="main-navbar" class="navbar navbar-dark bg-dark mb-4 shadow-sm" style="transition: background-color 0.3s ease;">
     <div class="container max-w-custom">
-        <span class="navbar-brand fw-bold">音響評価システム</span>
+        <span id="navbar-brand-text" class="navbar-brand fw-bold">音響評価システム</span>
     </div>
 </nav>
 
@@ -33,11 +33,9 @@
 
     <!-- 2. 調査画面 -->
     <section id="survey-section" class="d-none">
-        <!-- 🌟 戻るボタンを復元しました -->
         <button id="back-btn" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> 戻る</button>
-        <h3 id="current-survey-title" class="mb-3 text-center fw-bold"></h3>
         
-        <div id="dashboard-card" class="card shadow-sm mb-4 border-0">
+        <div id="dashboard-card" class="card shadow-sm mb-4 border-0 mt-2">
             <div class="card-body text-center">
                 
                 <div id="survey-info-before-start" class="mb-4 mt-3">
@@ -66,12 +64,32 @@
                 </div>
                 
                 <div id="beat-tracker" class="my-4 d-none">
+                    
+                    <div class="alert alert-warning mb-4 mx-auto d-inline-block text-start shadow-sm" style="max-width: 90%; border-left: 5px solid #ffc107;" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill fs-3 text-warning me-3"></i>
+                            <div>
+                                <strong class="d-block text-dark">現在楽曲が流れています！</strong>
+                                <!-- 🌟 変更: JSで文字を書き換えるために id="volume-warning-text" を追加 -->
+                                <span id="volume-warning-text" class="text-dark small">音が聞こえない場合は、サイトの再読み込みをして下さい。</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="current-beat-text" class="display-1 fw-bold mb-3" style="color: var(--theme-color);">1</div>
                     <div id="beat-circles" class="beat-grid"></div>
 
                     <button id="play-pause-btn" class="btn btn-outline-secondary btn-lg px-5 py-3 fs-3 mt-4 rounded-pill shadow-sm">
                         <i class="bi bi-pause-fill"></i> 一時停止
                     </button>
+
+                    <!-- 音量調整バー -->
+                    <div class="mt-4 mx-auto" style="max-width: 300px;">
+                        <label id="volume-label" for="volume-slider" class="form-label text-dark fw-bold fs-5 mb-2">
+                            <i class="bi bi-volume-up-fill"></i> 音量調整（50%）
+                        </label>
+                        <input type="range" class="form-range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+                    </div>
                 </div>
 
                 <button id="start-btn" class="btn btn-success btn-lg mt-4 py-3 w-100 fw-bold shadow-sm">音声データを読み込み＆開始 (音が出ます)</button>
@@ -81,6 +99,17 @@
         <div id="survey-form-area" class="card shadow-sm d-none border-0">
             <div class="card-body p-sm-5">
                 <form id="evaluation-form">
+                    
+                    <div class="mb-5 p-4 rounded bg-light shadow-sm" style="border-left: 6px solid var(--theme-color, #0d6efd);">
+                        <p class="fw-bold text-dark mb-1 fs-5 d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill me-2 fs-4" style="color: var(--theme-color, #0d6efd);"></i> 
+                            各項目について、直感に最も近いものを選択してください。
+                        </p>
+                        <p class="text-dark fw-bold mt-2 mb-0 ms-4 ps-2" style="font-size: 1rem;">
+                            （1に近いほど左側、10に近いほど右側の言葉の印象が強いことを表します）
+                        </p>
+                    </div>
+
                     <div id="questions-container"></div>
                     <button type="button" id="next-btn" class="btn btn-primary w-100 btn-lg py-3 mt-4 fw-bold shadow-sm" disabled>次の楽曲へ</button>
                 </form>

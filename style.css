@@ -1,6 +1,6 @@
 body {
     background-color: #f8f9fa;
-    transition: background-color 0.5s ease; /* 🌟 背景色がふわっと変わるアニメーション */
+    transition: background-color 0.5s ease;
 }
 
 .max-w-custom {
@@ -29,7 +29,6 @@ input[type="range"] {
     transition: background-color 0.05s, transform 0.05s;
 }
 
-/* 🌟 点灯時の色をテーマカラー（CSS変数）に変更 */
 .beat-circle.active {
     background-color: var(--theme-color, #0d6efd); 
     border-color: var(--theme-color, #0d6efd);
@@ -60,7 +59,6 @@ input[type="range"] {
     gap: 8px;
 }
 
-/* 🌟 ラジオボタンの枠線をテーマカラーに変更 */
 .radio-circle {
     width: 32px;
     height: 32px;
@@ -71,7 +69,6 @@ input[type="range"] {
     transition: all 0.2s ease;
 }
 
-/* 🌟 選択時のラジオボタンの色をテーマカラーに変更 */
 .btn-check:checked + .radio-circle {
     background-color: var(--theme-color, #0d6efd);
     box-shadow: 0 0 10px var(--theme-color-transparent, rgba(13, 110, 253, 0.5));
@@ -93,4 +90,30 @@ input[type="range"] {
     .radio-label-text {
         font-size: 0.75rem;
     }
+}
+
+/* 🌟 追加・変更: 音量スライダーのカスタマイズ（視認性向上） */
+/* スライダーの線（トラック）を濃いグレーに */
+#volume-slider::-webkit-slider-runnable-track {
+    background-color: #adb5bd !important; 
+}
+#volume-slider::-moz-range-track {
+    background-color: #adb5bd !important;
+}
+
+/* 🌟 変更: スライダーのツマミをテーマカラーにし、大きくする */
+#volume-slider::-webkit-slider-thumb {
+    background-color: var(--theme-color, #0d6efd) !important;
+    width: 24px !important; /* デフォルト(16px)より大きく */
+    height: 24px !important;
+    margin-top: -8px !important; /* 縦位置を線の中央に合わせる */
+    border: 2px solid #fff !important; /* 白いフチをつけて目立たせる */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2) !important; /* 少し影をつける */
+}
+#volume-slider::-moz-range-thumb {
+    background-color: var(--theme-color, #0d6efd) !important;
+    width: 24px !important;
+    height: 24px !important;
+    border: 2px solid #fff !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2) !important;
 }

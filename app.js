@@ -12,6 +12,7 @@ let currentTrackOffset = 0;
 let isAllAnswered = false;     
 let surveyResults = [];
 let animationFrameId = null;
+let globalVolume = 0.5;
 
 // ==========================================
 // 共通処理：カラー変換ツール（HEX -> RGBA）
@@ -75,6 +76,14 @@ function showSection(sectionId) {
         stopAllAudio();
         renderHome();
         document.body.style.backgroundColor = '#f8f9fa';
+
+        const navbar = document.getElementById('main-navbar');
+        const navBrand = document.getElementById('navbar-brand-text');
+        if (navbar && navBrand) {
+            navbar.style.backgroundColor = '';
+            navbar.classList.add('bg-dark');
+            navBrand.innerText = '音響評価システム';
+        }
     }
     document.getElementById('home-section').classList.add('d-none');
     document.getElementById('survey-section').classList.add('d-none');
@@ -121,6 +130,33 @@ function initSurvey(surveyId) {
     audioBuffers = [];
     isAllAnswered = false;
     
+    // UI側の音量バーと内部音量を同期、テキストの%表示と色も初期化
+    const volSlider = document.getElementById('volume-slider');
+    const volLabel = document.getElementById('volume-label');
+    const warningText = document.getElementById('volume-warning-text');
+    
+    if (volSlider && volLabel) {
+        globalVolume = parseFloat(volSlider.value);
+        volLabel.innerHTML = `<i class="bi bi-volume-up-fill"></i> 音量調整（${Math.round(globalVolume * 100)}%）`;
+
+        // 🌟 変更: 初期状態で0%になっていた場合の文字色切り替え
+        if (globalVolume === 0) {
+            volLabel.classList.remove('text-dark');
+            volLabel.classList.add('text-danger');
+        } else {
+            volLabel.classList.remove('text-danger');
+            volLabel.classList.add('text-dark');
+        }
+
+        if (warningText) {
+            if (globalVolume === 0) {
+                warningText.innerHTML = '<span class="text-danger fw-bold">現在音量が0%に設定されています。下の音量調整バーをご確認ください。</span>';
+            } else {
+                warningText.innerHTML = '音が聞こえない場合は、サイトの再読み込みをして下さい。';
+            }
+        }
+    }
+
     stopAllAudio(); 
 
     const themeColor = currentSurveyData.themeColor || '#0d6efd';
@@ -129,11 +165,17 @@ function initSurvey(surveyId) {
     
     document.body.style.backgroundColor = hexToRgba(themeColor, 0.08);
 
+    const navbar = document.getElementById('main-navbar');
+    const navBrand = document.getElementById('navbar-brand-text');
+    if (navbar && navBrand) {
+        navbar.classList.remove('bg-dark');
+        navbar.style.backgroundColor = themeColor;
+        navBrand.innerText = currentSurveyData.title;
+    }
+
     document.getElementById('progress-bar').style.backgroundColor = themeColor;
-    document.getElementById('current-survey-title').style.color = themeColor;
     document.getElementById('current-beat-text').style.color = themeColor;
     
-    document.getElementById('current-survey-title').innerText = currentSurveyData.title;
     document.getElementById('info-total-tracks').innerText = currentSurveyData.tracks.length;
     document.getElementById('info-total-questions').innerText = currentSurveyData.questions.length;
     
@@ -145,7 +187,9 @@ function initSurvey(surveyId) {
     });
     
     const qCount = currentSurveyData.questions.length;
-    const multiplier = 1 + (qCount * 0.1);
+    
+    // 🌟 変更: 計算意図を明確にするため (qCount / 10) に変更（数学的な結果は以前と同じです）
+    const multiplier = 1 + (qCount / 10);
     const estimatedTotalSeconds = totalLockSeconds * multiplier;
     
     const estimatedMinutes = Math.ceil(estimatedTotalSeconds / 60);
@@ -153,7 +197,6 @@ function initSurvey(surveyId) {
     
     document.getElementById('info-estimated-time').innerText = timeString;
 
-    // 🌟 検証準備画面を開いた時は「戻る」ボタンを確実に表示する
     const backBtn = document.getElementById('back-btn');
     if (backBtn) backBtn.classList.remove('d-none');
 
@@ -187,15 +230,21 @@ async function loadAudioFiles() {
     
     const fetchPromises = tracks.map(async (track) => {
         const response = await fetch(track.src);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const arrayBuffer = await response.arrayBuffer();
         return await audioContext.decodeAudioData(arrayBuffer);
     });
 
     try {
         audioBuffers = await Promise.all(fetchPromises);
+        return true; 
     } catch (e) {
         console.error("音源の読み込みに失敗しました。", e);
-        alert("音源の読み込みに失敗しました。");
+        alert("音源の読み込みに失敗しました。トップページに戻ります。");
+        showSection('home-section');
+        return false; 
     }
 }
 
@@ -266,7 +315,7 @@ function playTrack(index, scheduledTime = 0, offset = 0, fadeDuration = 0) {
     
     if (fadeDuration > 0) {
         gainNode.gain.setValueAtTime(0, startTime);
-        gainNode.gain.linearRampToValueAtTime(1, startTime + fadeDuration);
+        gainNode.gain.linearRampToValueAtTime(globalVolume, startTime + fadeDuration);
 
         if (currentSource && currentGainNode) {
             const prevSrc = currentSource;
@@ -276,7 +325,7 @@ function playTrack(index, scheduledTime = 0, offset = 0, fadeDuration = 0) {
             prevSrc.stop(startTime + fadeDuration);
         }
     } else {
-        gainNode.gain.value = 1;
+        gainNode.gain.value = globalVolume;
         if (currentSource) {
             currentSource.stop(startTime);
         }
@@ -378,14 +427,15 @@ function resetForm() {
 }
 
 // ==========================================
-// 9. ボタンのイベントリスナー
+// 9. ボタンなどのイベントリスナー
 // ==========================================
 document.getElementById('start-btn').addEventListener('click', async (e) => {
     const btn = e.target;
     btn.textContent = "読み込み中...お待ちください";
     btn.disabled = true;
 
-    await loadAudioFiles();
+    const isLoaded = await loadAudioFiles();
+    if (!isLoaded) return;
     
     if (audioContext.state === 'suspended') {
         audioContext.resume();
@@ -415,6 +465,38 @@ document.getElementById('play-pause-btn').addEventListener('click', () => {
         audioContext.resume().then(() => {
             updatePlayPauseBtnUI(false);
         });
+    }
+});
+
+// 🌟 音量スライダーのイベント（%表示と注意書きのテキスト・文字色をリアルタイム更新）
+document.getElementById('volume-slider').addEventListener('input', (e) => {
+    globalVolume = parseFloat(e.target.value);
+    
+    const volLabel = document.getElementById('volume-label');
+    if (volLabel) {
+        volLabel.innerHTML = `<i class="bi bi-volume-up-fill"></i> 音量調整（${Math.round(globalVolume * 100)}%）`;
+
+        // 🌟 変更: 0%のときに赤文字（text-danger）にする
+        if (globalVolume === 0) {
+            volLabel.classList.remove('text-dark');
+            volLabel.classList.add('text-danger');
+        } else {
+            volLabel.classList.remove('text-danger');
+            volLabel.classList.add('text-dark');
+        }
+    }
+
+    const warningText = document.getElementById('volume-warning-text');
+    if (warningText) {
+        if (globalVolume === 0) {
+            warningText.innerHTML = '<span class="text-danger fw-bold">現在音量が0%に設定されています。下の音量調整バーをご確認ください。</span>';
+        } else {
+            warningText.innerHTML = '音が聞こえない場合は、サイトの再読み込みをして下さい。';
+        }
+    }
+
+    if (currentGainNode && audioContext) {
+        currentGainNode.gain.setTargetAtTime(globalVolume, audioContext.currentTime, 0.05);
     }
 });
 
@@ -459,7 +541,6 @@ document.getElementById('next-btn').addEventListener('click', () => {
     }
 });
 
-// 🌟 戻るボタンのイベント制御（準備画面ならそのまま、検証中ならポップアップ）
 document.getElementById('back-btn').addEventListener('click', () => {
     const isSurveyRunning = !document.getElementById('survey-form-area').classList.contains('d-none');
     
@@ -480,8 +561,10 @@ function finishSurvey() {
     stopAllAudio();
     
     document.getElementById('dashboard-card').classList.add('d-none');
+
+    const backBtn = document.getElementById('back-btn');
+    if (backBtn) backBtn.classList.add('d-none');
     
-    // UIを「送信中」の表示に切り替える
     const formArea = document.getElementById('survey-form-area');
     formArea.innerHTML = `
         <div class="text-center p-5">
@@ -499,25 +582,20 @@ function finishSurvey() {
 
     const themeColor = currentSurveyData.themeColor || '#0d6efd';
 
-    // 🌟 送信するデータのパッケージを作成
     const payload = {
         surveyId: currentSurveyData.id,
         timestamp: new Date().toLocaleString("ja-JP"),
         results: surveyResults
     };
 
-    // 🌟 GASのウェブアプリURL（↓ここを書き換えてください！）
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw3eB7oLyLiw2VBwQO9BpH01OACKsxDHOJ_4GJkZSj5sCJs4QJSxyyQ2mn9CVRXhr_j/exec";
 
-    // fetchを使ってバックエンド(GAS)へPOST送信
     fetch(GAS_URL, {
         method: "POST",
-        // CORS(通信ブロック)を回避するため、あえて text/plain を指定します
         headers: { "Content-Type": "text/plain" }, 
         body: JSON.stringify(payload)
     })
     .then(response => {
-        // 送信成功時の表示
         formArea.innerHTML = `
             <div class="text-center p-5">
                 <h3 class="mb-4 fw-bold" style="color: ${themeColor}">ご協力ありがとうございました！</h3>
@@ -528,7 +606,6 @@ function finishSurvey() {
         console.log("◆ データ送信成功 ◆");
     })
     .catch(error => {
-        // 送信失敗時（オフラインなど）の表示
         console.error("送信エラー:", error);
         formArea.innerHTML = `
             <div class="text-center p-5">
