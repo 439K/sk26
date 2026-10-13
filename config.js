@@ -7,9 +7,27 @@ const appData = {
             icon: '😊', // Emojiや画像パス
             themeColor: '#ff6200',
             questions: [
+                // 【カテゴリー1】 感情・評価（心地よさや気分の変化）
                 { id: 'q1', left: '不快な', right: '快適な' },
-                { id: 'q2', left: '迫力がない', right: '迫力がある' },
-                { id: 'q3', left: 'あかさたな', right: 'はまやらわ' }
+                { id: 'q2', left: '緊張する', right: 'リラックスする' },
+                { id: 'q3', left: '暗い', right: '明るい' },
+                { id: 'q4', left: '退屈な', right: 'ワクワクする' },
+                
+                // 【カテゴリー2】 迫力・力量（音のエネルギーや重厚感）
+                { id: 'q5', left: '迫力がない', right: '迫力がある' },
+                { id: 'q6', left: '軽い', right: '重厚な' },
+                { id: 'q7', left: '弱い', right: '力強い' },
+                
+                // 【カテゴリー3】 空間・音質（ミックスやテクスチャ）
+                { id: 'q8', left: 'こもった', right: 'クリアな' },
+                { id: 'q9', left: '平坦な（のっぺりした）', right: '立体的な（奥行きがある）' },
+                { id: 'q10', left: '狭い', right: '広がりがある' },
+                { id: 'q11', left: '散らかっている', right: 'まとまっている' },
+                
+                // 【カテゴリー4】 適合性・クオリティ（ゲームへのマッチ度）
+                { id: 'q12', left: '違和感がある', right: '違和感がない' },
+                { id: 'q13', left: '安っぽい', right: 'リッチな（高級感がある）' },
+                { id: 'q14', left: '世界観に合わない', right: '世界観に合っている' }
             ],
             tracks: [
                 { id: 'tt_1', src: './audio/Mixdown.mp3', bpm: 124, beatCount: 16, requiredBeats: 32 },
