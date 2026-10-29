@@ -185,7 +185,7 @@ function initSurvey(surveyId) {
     });
     
     const qCount = currentSurveyData.questions.length;
-    const multiplier = 1 + (qCount / 10);
+    const multiplier = 1 + (qCount / 4);
     const estimatedTotalSeconds = totalLockSeconds * multiplier;
     
     const estimatedMinutes = Math.ceil(estimatedTotalSeconds / 60);
