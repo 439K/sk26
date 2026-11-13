@@ -32,7 +32,7 @@
     </section>
 
     <section id="survey-section" class="d-none">
-        <button id="back-btn" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> 戻る</button>
+        <button id="back-btn" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> トップページに戻る</button>
         
         <div id="dashboard-card" class="card shadow-sm mb-4 border-0 mt-2">
             <div class="card-body text-center p-sm-4">
@@ -40,17 +40,32 @@
                 <div id="survey-info-before-start" class="mb-4 mt-2">
                     
                     <h5 class="fw-bold mb-3 text-start" style="color: var(--theme-color, #0d6efd); border-bottom: 2px solid var(--theme-color, #0d6efd); padding-bottom: 8px;">はじめに：本調査について</h5>
-                    <div class="text-start p-4 bg-light rounded border mb-5 shadow-sm">
-                        <p class="mb-3">本調査は、<strong>「ゲームBGMのマスタリング（音圧・低音・リバーブの最終調整）」</strong>が、プレイヤーの心理的印象にどのような影響をもたらすのかを測定・分析する卒業研究のアンケートです。</p>
-                        <p class="mb-3">専用システムにて、処理を変化させた9パターンのゲームBGMを聴き比べていただき、それぞれの印象をご回答いただきます。</p>
+                    <div class="text-start p-4 bg-light rounded border mb-5 shadow-sm" style="line-height: 1.7;">
+                        
+                        <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-music-note-list me-2" style="color: var(--theme-color, #0d6efd);"></i>調査の目的と内容</h6>
+                        <!-- 🌟 文字サイズを大きく調整（font-size: 1.05rem） -->
+                        <p class="mb-3 text-dark" style="font-size: 1.05rem;">
+                            本調査は、ゲームオーディオにおける<strong>「マスタリング処理（音圧や低音、空間的な響きなどの最終的な音質調整）」</strong>の違いが、プレイヤーの感情や印象にどのような影響を与えるかを明らかにするための卒業研究アンケートです。
+                        </p>
+                        <p class="mb-3 text-dark" style="font-size: 1.05rem;">
+                            この調査では、「サイバーパンク風アクションゲームの軽快なステージBGM」を想定した短い楽曲（ループ音源）を聴取していただきます。<br>
+                            同じ楽曲に対して、意図的に異なるマスタリング処理を施した<strong>全9パターン</strong>の音源が順番に再生されますので、それぞれの音源に対して直感的にどのように感じたか（全13項目）を<strong>10段階評価</strong>でお答えください。
+                        </p>
+
+                        <h6 class="fw-bold border-bottom pb-2 mb-3 mt-4"><i class="bi bi-shield-check me-2" style="color: var(--theme-color, #0d6efd);"></i>データの取り扱いについて</h6>
+                        <ul class="mb-4 text-dark ps-3" style="font-size: 1.05rem;">
+                            <li>ご提供いただいたデータは、本卒業研究における統計分析および論文執筆の目的のみに使用し、責任を持って厳重に管理いたします。</li>
+                            <li>氏名、学籍番号、メールアドレスなど、個人を特定できる情報の取得は一切行いません。回答によって不利益を被ることはありません。</li>
+                            <li>収集した調査データは、本研究プロセスが終了次第、速やかに消去・破棄いたします。</li>
+                        </ul>
+
                         <div class="alert alert-secondary mb-0 border-0 shadow-sm" role="alert">
-                            <h6 class="fw-bold text-dark"><i class="bi bi-exclamation-circle-fill me-2 text-warning"></i>調査に関する注意事項</h6>
-                            <ul class="mb-0 small text-dark mt-2 ps-3">
-                                <li class="mb-1"><strong>推奨環境：</strong> 音質の細かな変化を聴き取るため、できる限り<strong>イヤホンやヘッドホンをご着用</strong>ください。</li>
-                                <li class="mb-1"><strong>匿名性の確保：</strong> 氏名やメールアドレスなど、個人を特定できる情報の取得は一切行いません。</li>
-                                <li><strong>データの保護：</strong> ご提供いただいたデータは本研究の目的のみに使用し、研究完了後に速やかに破棄いたします。</li>
-                            </ul>
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-headphones me-2 text-primary"></i>回答にあたってのお願い</h6>
+                            <p class="mb-0 text-dark" style="font-size: 1.05rem;">
+                                音質の細かな変化（低音の響きや空間の広がりなど）を聴き取っていただくため、できる限り<strong>イヤホンまたはヘッドホンをご着用</strong>のうえご回答をお願いいたします。
+                            </p>
                         </div>
+
                     </div>
 
                     <h5 class="text-secondary mb-4 fw-bold">調査ボリューム</h5>
@@ -111,11 +126,12 @@
                             回答にあたっての基準
                         </h5>
                         
-                        <p class="text-dark mb-4" style="line-height: 1.6;">
+                        <!-- 🌟 文字サイズを大きく調整（font-size: 1.1rem） -->
+                        <p class="text-dark mb-4" style="font-size: 1.1rem; line-height: 1.7;">
                             再生される音源を<strong>「アクションゲームやサイバーパンク風ゲームにおける、軽快なステージBGM」</strong>として聴いたとき、以下のそれぞれの言葉について<strong>ご自身がどのように感じるか（「〜だと思うか」）</strong>を直感でお答えください。
                         </p>
 
-                        <p class="text-dark fw-bold mb-2">
+                        <p class="text-dark fw-bold mb-2" style="font-size: 1.05rem;">
                             【選択肢の数字が示す意味】
                         </p>
                         <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded border">
@@ -131,16 +147,15 @@
                                 右側の言葉について<br><strong style="color: var(--theme-color, #0d6efd);">「非常にそう思う」</strong>
                             </div>
                         </div>
-                        <p class="text-muted small mt-2 mb-0 ms-1">※1〜10の中で、直感に最も近い数字を1つだけ選択してください。</p>
+                        <p class="text-muted mt-2 mb-0 ms-1" style="font-size: 0.95rem;">※1〜10の中で、直感に最も近い数字を1つだけ選択してください。</p>
                     </div>
 
                     <div id="questions-container"></div>
                     
-                    <!-- 🌟 ボタンの直前に案内文を追加 -->
-                    <div class="text-center mt-4 mb-2">
-                        <span class="text-danger small fw-bold"><i class="bi bi-info-circle-fill"></i> すべての項目に回答すると、このボタンが押せるようになります。</span>
+                    <div class="d-flex gap-3 mt-4">
+                        <button type="button" id="prev-btn" class="btn btn-outline-secondary btn-lg py-3 fw-bold shadow-sm d-none" style="flex: 1;">前の楽曲へ</button>
+                        <button type="button" id="next-btn" class="btn btn-lg py-3 fw-bold shadow-sm" style="flex: 2;" disabled>次の楽曲へ</button>
                     </div>
-                    <button type="button" id="next-btn" class="btn w-100 btn-lg py-3 fw-bold shadow-sm" disabled>次の楽曲へ</button>
 
                     <div id="progress-container" class="d-none mt-5 px-3">
                         <h5 class="text-secondary fw-bold mb-3 text-center">進行状況: <span id="progress-text" class="text-dark fs-3 fw-bolder">1 / 9</span></h5>

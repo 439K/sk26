@@ -5,12 +5,13 @@ let audioContext = null;
 let audioBuffers = [];
 let currentSurveyData = null;
 let currentTrackIndex = 0;
+let maxReachedIndex = 0;       // 🌟追加：どこまで楽曲を進めたかの最大インデックス
 let currentSource = null;
 let currentGainNode = null;
 let currentTrackStartTime = 0; 
 let currentTrackOffset = 0;    
 let isAllAnswered = false;     
-let surveyResults = [];
+let surveyResults = [];        // 🌟変更：pushではなくインデックス指定で保存する
 let animationFrameId = null;
 let globalVolume = 0.5;
 
@@ -126,6 +127,7 @@ function initSurvey(surveyId) {
     currentSurveyData = appData.surveys.find(s => s.id === surveyId);
     
     currentTrackIndex = 0;
+    maxReachedIndex = 0; // 初期化
     surveyResults = [];
     audioBuffers = [];
     isAllAnswered = false;
@@ -274,19 +276,36 @@ function updateBeatIndicator() {
     const requiredSeconds = requiredBeats * secPerBeat; 
     const remainingSeconds = Math.max(0, requiredSeconds - listenDuration); 
     
-    const displaySeconds = Math.ceil(remainingSeconds);
+    let displaySeconds = Math.ceil(remainingSeconds);
+
+    // 🌟「前の楽曲へ」で戻ってきたトラックの場合はカウントダウンを免除
+    if (currentTrackIndex < maxReachedIndex) {
+        displaySeconds = 0;
+    }
 
     const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
     const isLastTrack = currentTrackIndex === currentSurveyData.tracks.length - 1;
     
-    const baseText = isLastTrack ? "次へ進む" : "次の楽曲へ";
+    const baseText = isLastTrack ? "完了・送信する" : "次の楽曲へ";
 
+    // 「次の楽曲へ」ボタンの制御
     if (displaySeconds > 0) {
         nextBtn.innerText = `${baseText}（${displaySeconds}秒）`;
         nextBtn.disabled = true;
     } else {
         nextBtn.innerText = baseText;
-        nextBtn.disabled = !isAllAnswered; 
+        nextBtn.disabled = false; 
+    }
+
+    // 🌟「前の楽曲へ」ボタンの表示制御
+    if (prevBtn) {
+        if (currentTrackIndex > 0) {
+            prevBtn.classList.remove('d-none');
+            prevBtn.disabled = false;
+        } else {
+            prevBtn.classList.add('d-none');
+        }
     }
 
     animationFrameId = requestAnimationFrame(updateBeatIndicator);
@@ -346,7 +365,7 @@ function playTrack(index, scheduledTime = 0, offset = 0, fadeDuration = 0) {
 }
 
 // ==========================================
-// 8. 質問ごとのボタンの進捗デザイン更新 (🌟変更点)
+// 8. 質問ごとのボタンの進捗デザイン更新 
 // ==========================================
 function updateNextButtonProgress(answeredCount) {
     const nextBtn = document.getElementById('next-btn');
@@ -356,22 +375,15 @@ function updateNextButtonProgress(answeredCount) {
     const progressPercent = (answeredCount / totalQ) * 100;
     const themeColor = currentSurveyData.themeColor || '#0d6efd';
     
-    // ボタンの枠線は常にテーマカラー
     nextBtn.style.border = `2px solid ${themeColor}`;
-    
-    // 🌟 気持ち悪かったアウトライン（縁取り）と影を削除
     nextBtn.style.webkitTextStroke = '0';
     nextBtn.style.textShadow = 'none';
 
     if (progressPercent === 100) {
-        // 🌟 【100%のとき】
-        // 背景を濃いテーマカラーで塗りつぶし、文字を白にして完了を強調！
         nextBtn.style.setProperty('--btn-progress', '100%');
         nextBtn.style.setProperty('--btn-theme-color', themeColor);
         nextBtn.style.color = '#ffffff';
     } else {
-        // 🌟 【途中のとき】
-        // 背景の塗りを半透明（20%）にし、文字をテーマカラーにする（綺麗に読めます）
         const translucentFill = hexToRgba(themeColor, 0.2);
         nextBtn.style.setProperty('--btn-progress', `${progressPercent}%`);
         nextBtn.style.setProperty('--btn-theme-color', translucentFill);
@@ -380,19 +392,25 @@ function updateNextButtonProgress(answeredCount) {
 }
 
 // ==========================================
-// 9. アンケートUIの動的生成
+// 9. アンケートUIの動的生成と回答データの復元
 // ==========================================
 function renderQuestions() {
     const container = document.getElementById('questions-container');
     container.innerHTML = '';
     isAllAnswered = false;
     
+    // 🌟 既存の回答があれば復元用に取得
+    const existingData = surveyResults[currentTrackIndex] ? surveyResults[currentTrackIndex].answers : {};
+    let answeredCount = 0;
+
     currentSurveyData.questions.forEach((q, index) => {
         let radiosHtml = '';
         for (let i = 1; i <= 10; i++) {
+            // 既存の回答と一致していればチェックを入れる
+            const isChecked = existingData[q.id] === i ? 'checked' : '';
             radiosHtml += `
                 <div class="radio-circle-container">
-                    <input type="radio" class="btn-check question-radio" name="q-${q.id}" id="q-${q.id}-${i}" value="${i}" data-id="${q.id}">
+                    <input type="radio" class="btn-check question-radio" name="q-${q.id}" id="q-${q.id}-${i}" value="${i}" data-id="${q.id}" ${isChecked}>
                     <label class="radio-circle" for="q-${q.id}-${i}"></label>
                     <span class="radio-label-text">${i}</span>
                 </div>
@@ -411,14 +429,29 @@ function renderQuestions() {
             </div>
         `;
         container.insertAdjacentHTML('beforeend', html);
+        
+        if (existingData[q.id]) {
+            answeredCount++;
+        }
     });
 
     const radios = document.querySelectorAll('.question-radio');
-    let answeredQuestions = new Set();
+    let answeredQuestions = new Set(Object.keys(existingData));
     
-    updateNextButtonProgress(0);
+    updateNextButtonProgress(answeredCount);
 
     radios.forEach((radio) => {
+        // 🌟 復元されたチェックに色を付ける初期処理
+        if (radio.checked) {
+            const selectedLabel = document.querySelector(`label[for="${radio.id}"]`);
+            if (selectedLabel) {
+                const themeColor = currentSurveyData.themeColor || '#0d6efd';
+                selectedLabel.style.backgroundColor = themeColor;
+                selectedLabel.style.outlineColor = themeColor;
+                selectedLabel.style.borderColor = '#fff';
+            }
+        }
+
         radio.addEventListener('change', (e) => {
             const qId = e.target.getAttribute('data-id');
             answeredQuestions.add(qId);
@@ -451,12 +484,8 @@ function updateProgress() {
     document.getElementById('progress-bar').style.width = `${percent}%`;
 }
 
-function resetForm() {
-    renderQuestions();
-}
-
 // ==========================================
-// 10. ボタンなどのイベントリスナー
+// 10. ボタンなどのイベントリスナー・共通移動処理
 // ==========================================
 document.getElementById('start-btn').addEventListener('click', async (e) => {
     const btn = e.target;
@@ -513,21 +542,13 @@ document.getElementById('volume-slider').addEventListener('input', (e) => {
         }
     }
 
-    const warningText = document.getElementById('volume-warning-text');
-    if (warningText) {
-        if (globalVolume === 0) {
-            warningText.innerHTML = '<span class="text-danger fw-bold">現在音量が0%に設定されています。下の音量調整バーをご確認ください。</span>';
-        } else {
-            warningText.innerHTML = '音が聞こえない場合は、サイトの再読み込みをして下さい。';
-        }
-    }
-
     if (currentGainNode && audioContext) {
         currentGainNode.gain.setTargetAtTime(globalVolume, audioContext.currentTime, 0.05);
     }
 });
 
-document.getElementById('next-btn').addEventListener('click', () => {
+// 🌟 現在の回答を保存する関数
+function saveCurrentAnswers() {
     const currentData = { 
         trackId: currentSurveyData.tracks[currentTrackIndex].id, 
         answers: {} 
@@ -536,25 +557,28 @@ document.getElementById('next-btn').addEventListener('click', () => {
     document.querySelectorAll('.question-radio:checked').forEach(radio => {
         currentData.answers[radio.getAttribute('data-id')] = parseInt(radio.value, 10);
     });
-    surveyResults.push(currentData);
+    
+    // インデックス指定で上書き保存（重複を避けるため）
+    surveyResults[currentTrackIndex] = currentData;
+}
 
+// 🌟 トラックを移動する共通関数
+function moveToTrack(newIndex) {
     if (audioContext && audioContext.state === 'suspended') {
         audioContext.resume();
         updatePlayPauseBtnUI(false);
     }
 
-    currentTrackIndex++;
-
-    if (currentTrackIndex < currentSurveyData.tracks.length) {
+    if (newIndex < currentSurveyData.tracks.length) {
+        currentTrackIndex = newIndex;
         updateProgress();
-        resetForm();
+        renderQuestions(); // 復元処理込みで再描画
 
         const nextTrack = currentSurveyData.tracks[currentTrackIndex];
         const secPerBeat = 60 / nextTrack.bpm;
         const loopDuration = secPerBeat * nextTrack.beatCount; 
         
         const now = audioContext.currentTime;
-        
         const listenDuration = now - currentTrackStartTime; 
         const trackPosition = listenDuration + currentTrackOffset;
         
@@ -562,9 +586,29 @@ document.getElementById('next-btn').addEventListener('click', () => {
         const fadeTime = secPerBeat; 
 
         playTrack(currentTrackIndex, now, offset, fadeTime);
-
     } else {
         finishSurvey();
+    }
+}
+
+// 🌟 次の楽曲へ進む処理
+document.getElementById('next-btn').addEventListener('click', () => {
+    saveCurrentAnswers();
+
+    // 最大到達インデックスを更新（初めて進む場合のみプラス）
+    if (currentTrackIndex === maxReachedIndex) {
+        maxReachedIndex++;
+    }
+
+    moveToTrack(currentTrackIndex + 1);
+});
+
+// 🌟 前の楽曲へ戻る処理
+document.getElementById('prev-btn').addEventListener('click', () => {
+    saveCurrentAnswers(); // 戻る前にも現在の回答を保存
+
+    if (currentTrackIndex > 0) {
+        moveToTrack(currentTrackIndex - 1);
     }
 });
 
